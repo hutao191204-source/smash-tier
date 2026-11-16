@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>スマブラSP 画像付きTier表</title>
+<style>
+:root{color-scheme:light dark;--bg:#f5f6f8;--card:#fff;--text:#20242a;--muted:#69717d;--line:#dfe3e8;--panel:#f0f2f5}
+@media(prefers-color-scheme:dark){:root{--bg:#15171a;--card:#202328;--text:#f2f3f5;--muted:#a4abb5;--line:#3a4049;--panel:#2a2f36}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+main{max-width:1050px;margin:auto;padding:18px 14px 40px}h1{font-size:22px;margin:0 0 5px}.sub,.muted{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}input,select,button{font:inherit;border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--panel);color:var(--text)}
+input{min-width:0}button{cursor:pointer;background:var(--text);color:var(--card);border-color:var(--text)}button.secondary{background:var(--panel);color:var(--text);border-color:var(--line)}
+input:focus,button:focus,select:focus{outline:2px solid #6b9cff;outline-offset:2px}
+.hidden{display:none!important}.you{background:#e0f4e5;color:#185b2b;padding:5px 9px;border-radius:99px;font-size:12px}
+.tierrow{display:flex;gap:9px;align-items:stretch;border-bottom:1px solid var(--line);padding:10px 0;min-height:120px}
+.tierlabel{width:42px;flex:0 0 42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.S{background:#e9bd53;color:#382809}.A{background:#e9a1a1;color:#421d1d}.B{background:#9dbbe9;color:#172b48}.C{background:#a8cda9;color:#18391b}.D{background:#bdbdbd;color:#292929}
+.tiles{display:flex;gap:9px;flex-wrap:wrap;align-content:flex-start;flex:1}
+.fighter{width:90px;text-align:center;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.fighter img,.placeholder{width:86px;height:86px;object-fit:contain;background:var(--panel);border-radius:9px;display:flex;align-items:center;justify-content:center;margin:auto}
+.fighter .score{font-size:11px;color:var(--muted);margin-top:3px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted)}
+td input{width:90px;text-align:center;padding:7px}
+.tablewrap{overflow-x:auto}.notice{background:var(--panel);border-radius:9px;padding:10px;font-size:12px;color:var(--muted);line-height:1.6}
+@media(max-width:520px){main{padding:13px 9px 30px}.card{padding:11px}.fighter{width:76px}.fighter img,.placeholder{width:72px;height:72px}.tierrow{min-height:100px}}
+</style>
+</head>
+<body><main>
+<header><h1>スマブラSP 画像付きTier表</h1><div class="sub">評価点の平均からTierを自動判定するツール</div></header>
+<section class="card" id="join">
+  <b>参加者登録</b><p class="muted">最初に自分の名前を入力してください。</p>
+  <div class="row"><input id="name" value="山田" placeholder="参加者名" maxlength="24" style="flex:1"><button id="joinBtn">参加する</button></div>
+</section>
+<div id="app" class="hidden">
+<section class="card row" style="justify-content:space-between">
+  <div><div class="muted">参加中のユーザー</div><strong id="who">山田</strong></div><span class="you">自分の評価を編集</span>
+</section>
+<section class="card">
+  <h2 style="font-size:18px;margin:0 0 4px">Tier表</h2>
+  <p class="muted">キャラクター画像をTierごとに表示します。評価を入力すると自動で移動します。</p>
+  <div id="board"></div>
+  <p class="muted">S：1.2〜2.0 / A：0.4〜1.2未満 / B：−0.4〜0.4未満 / C：−1.2〜−0.4未満 / D：−2.0〜−1.2未満</p>
+</section>
+<section class="card">
+  <h2 style="font-size:18px;margin:0 0 10px">評価入力</h2>
+  <div class="row" style="margin-bottom:10px"><input id="search" placeholder="キャラクター検索" style="flex:1"><select id="filter"><option value="all">全キャラクター</option><option value="rated">評価済み</option><option value="unrated">未評価</option></select></div>
+  <div class="tablewrap"><table><thead><tr><th>キャラクター</th><th>山田の評価点</th><th>Tier</th></tr></thead><tbody id="rows"></tbody></table></div>
+</section>
+<section class="notice">このHTMLファイルは単体で動作する試作版です。入力した名前と評価は、このブラウザ内に保存されます。別の端末・参加者とのリアルタイム共有や、本人確認による編集制限には、別途サーバーと認証機能が必要です。画像はインターネット接続時に公式サイトから読み込みます。</section>
+</div>
+</main>
+<script>
+const roster=[
+['マリオ','mario'],['ドンキーコング','donkey_kong'],['リンク','link'],['サムス','samus'],['ダークサムス','dark_samus'],['ヨッシー','yoshi'],['カービィ','kirby'],['フォックス','fox'],['ピカチュウ','pikachu'],['ルイージ','luigi'],['ネス','ness'],['キャプテン・ファルコン','captain_falcon'],['プリン','jigglypuff'],['ピーチ','peach'],['デイジー','daisy'],['クッパ','bowser'],['アイスクライマー','ice_climbers'],['シーク','sheik'],['ゼルダ','zelda'],['ドクターマリオ','dr_mario'],['ピチュー','pichu'],['ファルコ','falco'],['マルス','marth'],['ルキナ','lucina'],['こどもリンク','young_link'],['ガノンドロフ','ganondorf'],['ミュウツー','mewtwo'],['ロイ','roy'],['クロム','chrom'],['Mr.ゲーム＆ウォッチ','mr_game_and_watch'],['メタナイト','meta_knight'],['ピット','pit'],['ブラックピット','dark_pit'],['ゼロスーツサムス','zero_suit_samus'],['ワリオ','wario'],['スネーク','snake'],['アイク','ike'],['ポケモントレーナー','pokemon_trainer'],['ディディーコング','diddy_kong'],['リュカ','lucas'],['ソニック','sonic'],['デデデ','king_dedede'],['ピクミン＆オリマー','olimar'],['ルカリオ','lucario'],['ロボット','rob'],['トゥーンリンク','toon_link'],['ウルフ','wolf'],['むらびと','villager'],['ロックマン','mega_man'],['Wii Fit トレーナー','wii_fit_trainer'],['ロゼッタ＆チコ','rosalina'],['リトル・マック','little_mac'],['ゲッコウガ','greninja'],['Mii 格闘タイプ','mii_brawler'],['Mii 剣術タイプ','mii_swordfighter'],['Mii 射撃タイプ','mii_gunner'],['パルテナ','palutena'],['パックマン','pac_man'],['ルフレ','robin'],['シュルク','shulk'],['クッパJr.','bowser_jr'],['ダックハント','duck_hunt'],['リュウ','ryu'],['ケン','ken'],['クラウド','cloud'],['カムイ','corrin'],['ベヨネッタ','bayonetta'],['インクリング','inkling'],['リドリー','ridley'],['シモン','simon'],['リヒター','richter'],['キングクルール','king_k_rool'],['しずえ','isabelle'],['ガオガエン','incineroar'],['パックンフラワー','piranha_plant'],['ジョーカー','joker'],['勇者','hero'],['バンジョー＆カズーイ','banjo_kazooie'],['テリー','terry'],['ベレト／ベレス','byleth'],['ミェンミェン','min_min'],['スティーブ','steve'],['セフィロス','sephiroth'],['ホムラ／ヒカリ','pyra'],['カズヤ','kazuya'],['ソラ','sora']];
+const $=id=>document.getElementById(id);
+let participant=localStorage.getItem('smashTierParticipant')||'',scores={};
+try{scores=JSON.parse(localStorage.getItem('smashTierScores')||'{}')}catch(e){scores={}}
+roster.forEach(([n])=>{if(!(n in scores))scores[n]=''});
+function tier(v){return v>=1.2?'S':v>=.4?'A':v>=-.4?'B':v>=-1.2?'C':'D'}
+function save(){localStorage.setItem('smashTierScores',JSON.stringify(scores))}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function tile(name,slug,val){let label=esc(name),url=`https://www.smashbros.com/assets_v2/img/fighter/${slug}/main.png`;return `<div class="fighter"><img src="${url}" alt="${label}" loading="lazy" onerror="this.outerHTML='<div class=&quot;placeholder&quot;>画像なし</div>'"><div>${label}</div>${val===null?'':`<div class="score">${val.toFixed(2)}</div>`}</div>`}
+function render(){
+ $('who').textContent=participant;
+ $('board').innerHTML=['S','A','B','C','D'].map(t=>{let entries=roster.filter(([n])=>scores[n]!==''&&tier(Number(scores[n]))===t);return `<div class="tierrow"><div class="tierlabel ${t}">${t}</div><div class="tiles">${entries.length?entries.map(([n,s])=>tile(n,s,Number(scores[n]))).join(''):'<span class="muted" style="font-size:12px;align-self:center">まだキャラクターがいません</span>'}</div></div>`}).join('')+`<div class="tierrow"><div class="tierlabel" style="background:var(--panel);color:var(--text);font-size:11px">未評価</div><div class="tiles">${roster.filter(([n])=>scores[n]==='').map(([n,s])=>tile(n,s,null)).join('')}</div></div>`;
+ let q=$('search').value.trim().toLowerCase(),f=$('filter').value;
+ $('rows').innerHTML=roster.filter(([n])=>n.toLowerCase().includes(q)).filter(([n])=>f==='all'||(f==='rated'?scores[n]!=='' : scores[n]==='')).map(([n])=>`<tr><td>${esc(n)}</td><td><input type="number" min="-2" max="2" step="any" data-name="${encodeURIComponent(n)}" value="${scores[n]}" placeholder="未評価" aria-label="${esc(n)}の評価点"></td><td>${scores[n]===''?'—':`<b class="${tier(Number(scores[n]))}" style="padding:3px 8px;border-radius:6px">${tier(Number(scores[n]))}</b>`}</td></tr>`).join('');
+}
+function enter(n){participant=n;localStorage.setItem('smashTierParticipant',n);$('join').classList.add('hidden');$('app').classList.remove('hidden');render()}
+$('joinBtn').addEventListener('click',()=>{let n=$('name').value.trim();if(!n){alert('参加者名を入力してください');return}enter(n)});
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter')$('joinBtn').click()});
+$('rows').addEventListener('change',e=>{let el=e.target;if(!el.matches('input[data-name]'))return;let n=decodeURIComponent(el.dataset.name);if(el.value===''){scores[n]='';save();render();return}let v=Number(el.value);if(!Number.isFinite(v)||v< -2||v>2){alert('−2から＋2の範囲で入力してください');el.value=scores[n];return}scores[n]=String(v);save();render()});
+$('search').addEventListener('input',render);$('filter').addEventListener('change',render);
+if(participant){$('name').value=participant;enter(participant)}
+</script>
+</body></html>
